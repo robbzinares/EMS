@@ -83,4 +83,3 @@ public class DeleteEmployeeFrame extends JFrame {
         SwingUtilities.invokeLater(() -> new DeleteEmployeeFrame("123", new EmployeeTableModel()).setVisible(true));
     }
 }
-
