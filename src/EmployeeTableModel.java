@@ -18,6 +18,8 @@ public class EmployeeTableModel extends AbstractTableModel {
         String csvSeparator = ",";
 
         try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
+            // Skip the header line
+            br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] rowData = line.split(csvSeparator);
                 data.add(rowData);
@@ -36,6 +38,9 @@ public class EmployeeTableModel extends AbstractTableModel {
     private void saveEmployeeData() {
         String csvFile = "employees.csv";
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile))) {
+            // Write the header line
+            bw.write(String.join(",", columnNames));
+            bw.newLine();
             for (String[] row : data) {
                 StringBuilder rowString = new StringBuilder();
                 for (int i = 0; i < row.length; i++) {
@@ -93,5 +98,9 @@ public class EmployeeTableModel extends AbstractTableModel {
             }
         }
         // Employee not found, handle accordingly
+    }
+
+    void addEmployee(String[] string) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

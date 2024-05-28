@@ -6,9 +6,9 @@ import java.io.IOException;
 
 public class DeleteEmployeeFrame extends JFrame {
     private String employeeNumber;
-    private EmployeeTableModel tableModel;
     private JPanel detailsPanel;
     private JButton deleteButton;
+    private EmployeeTableModel tableModel;
 
     public DeleteEmployeeFrame(String employeeNumber, EmployeeTableModel tableModel) {
         this.employeeNumber = employeeNumber;
@@ -33,7 +33,10 @@ public class DeleteEmployeeFrame extends JFrame {
         gbc.anchor = GridBagConstraints.CENTER;
         detailsPanel.add(deleteButton, gbc);
 
-        deleteButton.addActionListener(e -> deleteEmployee());
+        deleteButton.addActionListener(e -> {
+            tableModel.deleteEmployee(employeeNumber);
+            dispose();
+        });
 
         setSize(500, 350);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -68,18 +71,5 @@ public class DeleteEmployeeFrame extends JFrame {
 
         gbc.gridx = 1;
         detailsPanel.add(new JLabel(valueText), gbc);
-    }
-
-    private void deleteEmployee() {
-        int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this employee?", "Delete Confirmation", JOptionPane.YES_NO_OPTION);
-        if (confirm == JOptionPane.YES_OPTION) {
-            tableModel.deleteEmployee(employeeNumber);
-            JOptionPane.showMessageDialog(this, "Employee deleted successfully.");
-            dispose();
-        }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new DeleteEmployeeFrame("123", new EmployeeTableModel()).setVisible(true));
     }
 }

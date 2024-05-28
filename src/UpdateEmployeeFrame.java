@@ -1,72 +1,40 @@
 import javax.swing.*;
-import java.awt.event.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
 public class UpdateEmployeeFrame extends JFrame {
     private String employeeNumber;
-    private EmployeeTableModel tableModel;
-    private JTextField lastNameField, firstNameField, sssNoField, philHealthNoField, tinField, pagibigNoField;
+    private JPanel detailsPanel;
+    private JTextField[] textFields;
     private JButton updateButton;
+    private EmployeeTableModel tableModel;
 
     public UpdateEmployeeFrame(String employeeNumber, EmployeeTableModel tableModel) {
         this.employeeNumber = employeeNumber;
         this.tableModel = tableModel;
-        setTitle("Update Employee Details");
-        setLayout(null);
+        setTitle("Update Employee");
+        setLayout(new BorderLayout());
 
-        JLabel lastNameLabel = new JLabel("Last Name:");
-        lastNameLabel.setBounds(20, 20, 80, 25);
-        add(lastNameLabel);
+        detailsPanel = new JPanel(new GridBagLayout());
+        JScrollPane scrollPane = new JScrollPane(detailsPanel);
+        add(scrollPane, BorderLayout.CENTER);
 
-        lastNameField = new JTextField();
-        lastNameField.setBounds(100, 20, 165, 25);
-        add(lastNameField);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
 
-        JLabel firstNameLabel = new JLabel("First Name:");
-        firstNameLabel.setBounds(20, 50, 80, 25);
-        add(firstNameLabel);
-
-        firstNameField = new JTextField();
-        firstNameField.setBounds(100, 50, 165, 25);
-        add(firstNameField);
-
-        JLabel sssNoLabel = new JLabel("SSS No.:");
-        sssNoLabel.setBounds(20, 80, 80, 25);
-        add(sssNoLabel);
-
-        sssNoField = new JTextField();
-        sssNoField.setBounds(100, 80, 165, 25);
-        add(sssNoField);
-
-        JLabel philHealthNoLabel = new JLabel("PhilHealth No.:");
-        philHealthNoLabel.setBounds(20, 110, 100, 25);
-        add(philHealthNoLabel);
-
-        philHealthNoField = new JTextField();
-        philHealthNoField.setBounds(120, 110, 145, 25);
-        add(philHealthNoField);
-
-        JLabel tinLabel = new JLabel("TIN:");
-        tinLabel.setBounds(20, 140, 80, 25);
-        add(tinLabel);
-
-        tinField = new JTextField();
-        tinField.setBounds(100, 140, 165, 25);
-        add(tinField);
-
-        JLabel pagibigNoLabel = new JLabel("Pagibig No.:");
-        pagibigNoLabel.setBounds(20, 170, 80, 25);
-        add(pagibigNoLabel);
-
-        pagibigNoField = new JTextField();
-        pagibigNoField.setBounds(100, 170, 165, 25);
-        add(pagibigNoField);
+        loadEmployeeDetails(gbc);
 
         updateButton = new JButton("Update");
-        updateButton.setBounds(100, 210, 100, 25);
-        add(updateButton);
+        gbc.gridx = 0;
+        gbc.gridy += 1;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        detailsPanel.add(updateButton, gbc);
 
         updateButton.addActionListener(new ActionListener() {
             @Override
@@ -75,35 +43,25 @@ public class UpdateEmployeeFrame extends JFrame {
             }
         });
 
-        // Call the readCSVAndUpdateFields method to populate fields
-        readCSVAndUpdateFields("employees.csv", employeeNumber);
-
-        setSize(350, 300);
+        setSize(500, 350);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
     }
 
-    // Method to read CSV data and update fields
-    private void readCSVAndUpdateFields(String csvFile, String employeeNumber) {
-        String line = "";
-        String csvSeparator = ",";
-
-        try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
-            // Read data lines
-            while ((line = br.readLine()) != null) {
-                // Split the line by the CSV separator
-                String[] data = line.split(csvSeparator);
-
-                // Check if the employee number matches
-                if (data.length > 0 && data[0].equals(employeeNumber)) {
-                    // Populate text fields with data from CSV
-                    lastNameField.setText(data.length > 1 ? data[1] : "");
-                    firstNameField.setText(data.length > 2 ? data[2] : "");
-                    sssNoField.setText(data.length > 3 ? data[3] : "");
-                    philHealthNoField.setText(data.length > 4 ? data[4] : "");
-                    tinField.setText(data.length > 5 ? data[5] : "");
-                    pagibigNoField.setText(data.length > 6 ? data[6] : "");
-                    break; // Stop reading once employee data is found
+    private void loadEmployeeDetails(GridBagConstraints gbc) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("employees.csv"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data[0].equals(employeeNumber)) {
+                    addLabelAndTextField("Employee Number:", data[0], gbc, 0, false);
+                    addLabelAndTextField("Last Name:", data[1], gbc, 1, true);
+                    addLabelAndTextField("First Name:", data[2], gbc, 2, true);
+                    addLabelAndTextField("SSS No.:", data[3], gbc, 3, true);
+                    addLabelAndTextField("PhilHealth No.:", data[4], gbc, 4, true);
+                    addLabelAndTextField("TIN:", data[5], gbc, 5, true);
+                    addLabelAndTextField("Pagibig No.:", data[6], gbc, 6, true);
+                    break;
                 }
             }
         } catch (IOException e) {
@@ -111,26 +69,30 @@ public class UpdateEmployeeFrame extends JFrame {
         }
     }
 
-    // Method to update employee details
-    private void updateEmployeeDetails() {
-        String lastName = lastNameField.getText();
-        String firstName = firstNameField.getText();
-        String sssNo = sssNoField.getText();
-        String philHealthNo = philHealthNoField.getText();
-        String tin = tinField.getText();
-        String pagibigNo = pagibigNoField.getText();
+    private void addLabelAndTextField(String labelText, String valueText, GridBagConstraints gbc, int row, boolean editable) {
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        detailsPanel.add(new JLabel(labelText), gbc);
 
-        // Create an array with updated details
-        String[] updatedDetails = {lastName, firstName, sssNo, philHealthNo, tin, pagibigNo};
+        gbc.gridx = 1;
+        JTextField textField = new JTextField(valueText, 10);
+        textField.setEditable(editable);
+        detailsPanel.add(textField, gbc);
 
-        // Update the details in the table model
-        tableModel.updateEmployeeDetails(employeeNumber, updatedDetails);
-
-        // Close the frame
-        dispose();
+        if (editable) {
+            if (textFields == null) {
+                textFields = new JTextField[6];
+            }
+            textFields[row - 1] = textField;
+        }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new UpdateEmployeeFrame("123", new EmployeeTableModel()).setVisible(true));
+    private void updateEmployeeDetails() {
+        String[] newDetails = new String[textFields.length];
+        for (int i = 0; i < textFields.length; i++) {
+            newDetails[i] = textFields[i].getText();
+        }
+        tableModel.updateEmployeeDetails(employeeNumber, newDetails);
+        dispose();
     }
 }

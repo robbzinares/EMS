@@ -7,8 +7,9 @@ import java.io.IOException;
 public class EmployeeDetailsFrame extends JFrame {
     private String employeeNumber;
     private JPanel detailsPanel;
-    private JTextField monthField;
+    private JComboBox<String> monthComboBox;
     private JButton computeButton;
+    private JTextArea payDetailsArea;
 
     public EmployeeDetailsFrame(String employeeNumber) {
         this.employeeNumber = employeeNumber;
@@ -25,14 +26,14 @@ public class EmployeeDetailsFrame extends JFrame {
 
         loadEmployeeDetails(gbc);
 
-        JLabel monthLabel = new JLabel("Enter Month:");
+        JLabel monthLabel = new JLabel("Select Month:");
         gbc.gridx = 0;
         gbc.gridy += 1;
         detailsPanel.add(monthLabel, gbc);
 
-        monthField = new JTextField(10);
+        monthComboBox = new JComboBox<>(new String[]{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"});
         gbc.gridx = 1;
-        detailsPanel.add(monthField, gbc);
+        detailsPanel.add(monthComboBox, gbc);
 
         computeButton = new JButton("Compute");
         gbc.gridx = 0;
@@ -41,9 +42,17 @@ public class EmployeeDetailsFrame extends JFrame {
         gbc.anchor = GridBagConstraints.CENTER;
         detailsPanel.add(computeButton, gbc);
 
-        computeButton.addActionListener(e -> computeSalary(monthField.getText()));
+        payDetailsArea = new JTextArea(10, 40);
+        payDetailsArea.setEditable(false);
+        JScrollPane payDetailsScrollPane = new JScrollPane(payDetailsArea);
+        gbc.gridx = 0;
+        gbc.gridy += 1;
+        gbc.gridwidth = 2;
+        detailsPanel.add(payDetailsScrollPane, gbc);
 
-        setSize(500, 350);
+        computeButton.addActionListener(e -> computeSalary((String) monthComboBox.getSelectedItem()));
+
+        setSize(500, 450);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
     }
@@ -79,9 +88,22 @@ public class EmployeeDetailsFrame extends JFrame {
     }
 
     private void computeSalary(String month) {
-        // Implement the salary computation logic based on the selected month
-        // This is a placeholder for the actual computation logic
-        JOptionPane.showMessageDialog(this, "Salary computed for " + month);
+        StringBuilder payDetails = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader("salary.csv"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data[0].equals(employeeNumber) && data[1].equals(month)) {
+                    payDetails.append("Month: ").append(data[1]).append("\n")
+                              .append("Basic Salary: ").append(data[2]).append("\n")
+                              .append("Deductions: ").append(data[3]).append("\n")
+                              .append("Net Pay: ").append(data[4]).append("\n");
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        payDetailsArea.setText(payDetails.length() > 0 ? payDetails.toString() : "No pay details found for the selected month.");
     }
 
     public static void main(String[] args) {

@@ -6,8 +6,10 @@ public class LoginFrame extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton loginButton;
+    private Runnable onSuccess;
 
-    public LoginFrame() {
+    public LoginFrame(Runnable onSuccess) {
+        this.onSuccess = onSuccess;
         setTitle("Employee Management System - Login");
         setLayout(null);
 
@@ -37,7 +39,7 @@ public class LoginFrame extends JFrame {
                 try {
                     if (authenticateUser(usernameField.getText(), new String(passwordField.getPassword()))) {
                         dispose();
-                        new MainFrame().setVisible(true);
+                        onSuccess.run();
                     } else {
                         JOptionPane.showMessageDialog(null, "Incorrect username or password!");
                     }
@@ -54,7 +56,20 @@ public class LoginFrame extends JFrame {
     }
 
     private boolean authenticateUser(String username, String password) throws IOException {
-        // Your authentication logic here
-        return true; // Dummy implementation for testing
+        String csvFile = "accounts.csv";
+        String line;
+        String csvSeparator = ",";
+
+        try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
+            while ((line = br.readLine()) != null) {
+                String[] account = line.split(csvSeparator);
+                if (account[0].equals(username) && account[1].equals(password)) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
